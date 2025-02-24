@@ -1,68 +1,81 @@
-import logo from "./logo.svg";
-import "./App.css";
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
 
-function App() {
-  const [search, setSearch] = useState("chennai");
-  const [city, setCity] = useState(null);
+function WeatherApp() {
+  const [weatherData, setWeatherData] = useState(null);
+  const [city, setCity] = useState("");
+  const [error, setError] = useState(null);
 
-  const getWeatherData = async () => {
-    let response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${search}&appid=7db7f4dc24f41ff2956b0ddce4ddf5da&units=metric`
-    );
-    let result = await response.json();
-    setCity(result);
+  const getWeather = async () => {
+    const apiKey = "your-api-key-here"; // replace with your OpenWeatherMap API key
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) {
+        throw new Error("City not found");
+      }
+      const data = await response.json();
+      setWeatherData(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      setWeatherData(null);
+    }
   };
 
-  useEffect(() => {
-    getWeatherData();
-  }, [search]);
+  const handleSearch = () => {
+    if (city.trim()) {
+      getWeather();
+      setCity("");
+    }
+  };
 
   return (
-    <div className="App">
-      <div className="weather-card">
-        <div className="search">
-          <input
-            type="search"
-            placeholder="enter city name"
-            spellCheck="false"
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="weather">
-          <img
-            className="weather-icon"
-            src="https://static.vecteezy.com/system/resources/previews/024/825/182/non_2x/3d-weather-icon-day-with-rain-free-png.png"
-            alt="..."
-          />
-          <h1 className="temp">{city?.main?.temp}°C </h1>
-          <h2 className="city">{city?.name}</h2>
-          <div className="details">
-            <div
-              style={{ display: "flex" }}
-              className="col"
-            >
-              <img
-                className="humi"
-                src="https://static-00.iconduck.com/assets.00/humidity-icon-2048x1675-xxsge5os.png"
-              />
-              <div className="info">
-                <p className="humidity">{city?.main?.humidity}%</p>
-                <p>Humidity</p>
-              </div>
-            </div>
-            <div className="col">
-              <img src="https://cdn-icons-png.flaticon.com/512/136/136712.png" />
-              <div className="info">
-                <p className="wind">{city?.wind?.speed} km/h</p>
-                <p>Wind Speed</p>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <h1>Weather App</h1>
+
+      <div>
+        <input
+          type="text"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Enter city"
+          style={{ padding: "10px", fontSize: "16px" }}
+        />
+        <button
+          onClick={handleSearch}
+          style={{
+            padding: "10px",
+            fontSize: "16px",
+            cursor: "pointer",
+            marginLeft: "10px",
+          }}
+        >
+          Search
+        </button>
       </div>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {weatherData && (
+        <div>
+          <h2>
+            {weatherData.name}, {weatherData.sys.country}
+          </h2>
+          <h3>{weatherData.weather[0].description}</h3>
+          <h4>Temperature: {weatherData.main.temp}°C</h4>
+          <h5>Humidity: {weatherData.main.humidity}%</h5>
+          <h5>Wind: {weatherData.wind.speed} m/s</h5>
+          <img
+            src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}.png`}
+            alt={weatherData.weather[0].description}
+            style={{ width: "50px", height: "50px" }}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-export default Component;
+ReactDOM.render(<WeatherApp />, document.getElementById("root"));
