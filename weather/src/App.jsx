@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Component from "./component";
 
 function App() {
   const [task, setTask] = useState();
@@ -34,6 +35,7 @@ function App() {
           </li>
         ))}
       </ul>
+      <Component />
     </div>
   );
 }
